@@ -1,0 +1,23 @@
+services: docker
+env:
+  global:
+    - GCP_PROJECT_ID=stockmanagement-294408
+    - IMAGE=gcr.io/stockmanagement-294408/app
+    - CLOUD_RUN_SERVICE=app
+    - CLOUD_RUN_REGION=us-central1
+    - CLOUDSDK_CORE_DISABLE_PROMPTS=1
+before_install:
+  - openssl aes-256-cbc -K $encrypted_064a6463260d_key -iv $encrypted_064a6463260d_iv -in terraform.json.enc -out terraform.json -d
+  - curl https://sdk.cloud.google.com | bash > /dev/null
+  - source "$HOME/google-cloud-sdk/path.bash.inc"
+  - gcloud auth activate-service-account --key-file=google-key.json
+  - gcloud auth configure-docker
+  - gcloud config set project "${GCP_PROJECT_ID}"
+  - gcloud components install beta
+install: true
+script:
+  - |-
+    set -ex;
+    docker build -t "${IMAGE}:${TRAVIS_COMMIT}" . && \
+    docker push "${IMAGE}:${TRAVIS_COMMIT}" && \
+    set +x

@@ -8,8 +8,8 @@
 **/target/**
 *.iml
 
-#GCLOUD
-google-key.json
+# gcloud keys
+terraform.json
 
 #INFLUX
 influxdb.conf
