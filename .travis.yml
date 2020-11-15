@@ -13,7 +13,6 @@ before_install:
   - gcloud auth activate-service-account --key-file=terraform.json
   - gcloud auth configure-docker
   - gcloud config set project "${GCP_PROJECT_ID}"
-  - gcloud components install beta
 install: true
 script:
   - |-
