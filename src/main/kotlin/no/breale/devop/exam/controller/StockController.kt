@@ -1,6 +1,8 @@
 package no.breale.devop.exam.controller
 
+import io.micrometer.core.instrument.DistributionSummary
 import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Tag
 import no.breale.devop.exam.dto.StockDTO
 import no.breale.devop.exam.service.StockService
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,7 +26,7 @@ class StockController {
 
     @GetMapping(path = ["/{id}"],produces = [MediaType.APPLICATION_JSON_VALUE])
     fun getStock(@PathVariable("id") stockId: Long): ResponseEntity<StockDTO> {
-        log.info("Attempting to get a stock")
+        log.info("Attempting to get a stock with id $stockId")
         val id: Long
 
         try {
@@ -45,23 +47,29 @@ class StockController {
 
     @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
     fun getAllStocks(): ResponseEntity<List<StockDTO>> {
-        return ResponseEntity.ok(stockService.getAllStock())
+        var stocks: List<StockDTO> = emptyList()
+        registry.more().longTaskTimer("api.response.timer.collection.stock").recordCallable {
+            stocks = stockService.getAllStock()
+            registry.gaugeCollectionSize("api.response", listOf(Tag.of("type", "collection")), stocks)
+            log.info("Stock count ${stocks.size}")
+        }
+        return ResponseEntity.ok(stocks)
     }
 
     @PostMapping(consumes = [(MediaType.APPLICATION_JSON_VALUE)])
-    fun createStock(@RequestBody stockDTO: StockDTO): ResponseEntity<Unit> {
+    fun createStock(@RequestBody stockDTO: StockDTO): ResponseEntity<Unit> = registry.timer("api.creation.measurement").recordCallable {
         log.info("Attempting to create a stock")
         val id = stockService.createStock(stockDTO)
 
         if (id == -1L) {
             log.warn("Unable to create stock")
-            return ResponseEntity.status(400).build()
+            return@recordCallable ResponseEntity.status(400).build()
         }
 
         val createdLink = URI.create("stock/$id")
 
         log.info("Stock with id: $id was created and put on $createdLink")
         registry.counter("api.response", "created", "stock").increment()
-        return ResponseEntity.created(createdLink).build()
+        return@recordCallable ResponseEntity.created(createdLink).build()
     }
 }

@@ -1,0 +1,2 @@
+<!-- Dont want to ship any logs when testing -->
+<configuration />

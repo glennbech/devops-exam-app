@@ -16,7 +16,7 @@
         <version.springboot>2.1.0.RELEASE</version.springboot>
         <version.h2>1.4.197</version.h2>
         <version.postgres>42.1.4</version.postgres>
-        <version.logz>1.0.2</version.logz>
+        <version.logz>1.0.24</version.logz>
         <version.restassured>4.0.0</version.restassured>
         <version.assertj>3.11.1</version.assertj>
         <version.micrometer>1.5.5</version.micrometer>
@@ -78,12 +78,6 @@
             <!--<scope>test</scope> NOTE: Always using H2-->
         </dependency>
 
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>${version.postgres}</version>
-        </dependency>
-
 
         <!--Logging  -->
         <dependency>
@@ -91,11 +85,12 @@
             <artifactId>logzio-logback-appender</artifactId>
             <version>${version.logz}</version>
         </dependency>
-        <dependency> <!-- NOTE: Needed for logback config when using config-->
+        <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>
             <version>2.9.7</version>
         </dependency>
+
 
         <!-- Metrics -->
         <dependency>
