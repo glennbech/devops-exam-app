@@ -1,5 +1,6 @@
 package no.breale.devop.exam.controller
 
+import io.micrometer.core.annotation.Timed
 import io.micrometer.core.instrument.DistributionSummary
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.net.URI
 import org.slf4j.LoggerFactory
+import java.util.concurrent.TimeUnit
 
 @RestController
 @RequestMapping("stock")
@@ -25,6 +27,7 @@ class StockController {
     private val log = LoggerFactory.getLogger(this::class.java)
 
     @GetMapping(path = ["/{id}"],produces = [MediaType.APPLICATION_JSON_VALUE])
+    @Timed
     fun getStock(@PathVariable("id") stockId: Long): ResponseEntity<StockDTO> {
         log.info("Attempting to get a stock with id $stockId")
         val id: Long
@@ -46,30 +49,29 @@ class StockController {
     }
 
     @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
+    @Timed("List stocks", longTask = true)
     fun getAllStocks(): ResponseEntity<List<StockDTO>> {
-        var stocks: List<StockDTO> = emptyList()
-        registry.more().longTaskTimer("api.response.timer.collection.stock").recordCallable {
-            stocks = stockService.getAllStock()
-            registry.gaugeCollectionSize("api.response", listOf(Tag.of("type", "collection")), stocks)
-            log.info("Stock count ${stocks.size}")
-        }
+        val stocks = stockService.getAllStock()
+        TimeUnit.MILLISECONDS.sleep((Math.random() * 100).toLong()) // Mock a db with much resources
+        log.info("Stock count ${stocks.size}")
         return ResponseEntity.ok(stocks)
     }
 
     @PostMapping(consumes = [(MediaType.APPLICATION_JSON_VALUE)])
-    fun createStock(@RequestBody stockDTO: StockDTO): ResponseEntity<Unit> = registry.timer("api.creation.measurement").recordCallable {
+    @Timed
+    fun createStock(@RequestBody stockDTO: StockDTO): ResponseEntity<Unit>{
         log.info("Attempting to create a stock")
         val id = stockService.createStock(stockDTO)
 
         if (id == -1L) {
             log.warn("Unable to create stock")
-            return@recordCallable ResponseEntity.status(400).build()
+            return ResponseEntity.status(400).build()
         }
 
         val createdLink = URI.create("stock/$id")
 
         log.info("Stock with id: $id was created and put on $createdLink")
         registry.counter("api.response", "created", "stock").increment()
-        return@recordCallable ResponseEntity.created(createdLink).build()
+        return ResponseEntity.created(createdLink).build()
     }
 }

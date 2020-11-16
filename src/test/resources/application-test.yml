@@ -1,11 +1,7 @@
-server:
-  port=${PORT:8080}
-
 management:
   metrics:
     export:
       influx:
         enabled: false
-
 logging:
-  config: src/main/resources/logback-logzio.xml
+  config: src/main/resources/logback-local.xml

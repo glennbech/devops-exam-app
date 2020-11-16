@@ -1,7 +1,4 @@
-<!-- Used inspiration from course curriculum at github: https://github.com/PGR301-2020/01-devops-helloworld/blob/master/src/main/resources/logback.xml -->
-<!-- Use debug=true here if you want to see output from the appender itself -->
 <configuration>
-    <!-- Use shutdownHook so that we can close gracefully and finish the log drain -->
     <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook"/>
     <appender name="LOGZIO" class="io.logz.logback.LogzioLogbackAppender">
         <token>${LOGZ_TOKEN}</token>
