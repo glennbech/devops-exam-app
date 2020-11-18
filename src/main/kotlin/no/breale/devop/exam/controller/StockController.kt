@@ -1,9 +1,12 @@
+/**
+ * Used some inspiration regarding micrometer
+ * URL: https://micrometer.io/docs/concepts
+ * DATE: 17.11.2020
+ */
 package no.breale.devop.exam.controller
 
 import io.micrometer.core.annotation.Timed
-import io.micrometer.core.instrument.DistributionSummary
-import io.micrometer.core.instrument.MeterRegistry
-import io.micrometer.core.instrument.Tag
+import io.micrometer.core.instrument.*
 import no.breale.devop.exam.dto.StockDTO
 import no.breale.devop.exam.service.StockService
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,18 +19,24 @@ import java.util.concurrent.TimeUnit
 
 @RestController
 @RequestMapping("stock")
-class StockController {
+class StockController(
+        @Autowired private val stockService: StockService,
+        @Autowired private val registry: MeterRegistry
+) {
 
-    @Autowired
-    lateinit var stockService: StockService
+    private val createdCounter = Counter.builder("api.count")
+            .description("Number of stocks created")
+            .tag("stock", "create")
+            .register(registry)
 
-    @Autowired
-    private lateinit var registry: MeterRegistry
+    private val createdDistributionSummery = DistributionSummary.builder("api.summary")
+            .description("Body size of request")
+            .tag("stock", "create")
+            .register(registry)
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
     @GetMapping(path = ["/{id}"],produces = [MediaType.APPLICATION_JSON_VALUE])
-    @Timed
     fun getStock(@PathVariable("id") stockId: Long): ResponseEntity<StockDTO> {
         log.info("Attempting to get a stock with id $stockId")
         val id: Long
@@ -48,19 +57,25 @@ class StockController {
         return ResponseEntity.ok(stock)
     }
 
+    @Timed(value = "api.timer", extraTags = ["stock", "all"], description = "Time spent listing stocks", longTask = true)
     @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
-    @Timed("List stocks", longTask = true)
     fun getAllStocks(): ResponseEntity<List<StockDTO>> {
         val stocks = stockService.getAllStock()
-        TimeUnit.MILLISECONDS.sleep((Math.random() * 100).toLong()) // Mock a db with much resources
+        TimeUnit.MILLISECONDS.sleep((Math.random() * 300).toLong()) // Mock a db with much resources
         log.info("Stock count ${stocks.size}")
+        registry.gauge("api.gauge", stocks.size)
         return ResponseEntity.ok(stocks)
     }
 
     @PostMapping(consumes = [(MediaType.APPLICATION_JSON_VALUE)])
-    @Timed
-    fun createStock(@RequestBody stockDTO: StockDTO): ResponseEntity<Unit>{
+    @Timed(value = "api.timer", extraTags = ["stock", "create"], description = "Time spent creating a new stock")
+    fun createStock(@RequestHeader(value = "Content-Length") contentLength: String, @RequestBody stockDTO: StockDTO): ResponseEntity<Unit>{
         log.info("Attempting to create a stock")
+        if(contentLength.isNotEmpty()) {
+            val contentLengthAsNumber = contentLength.toDouble()
+            createdDistributionSummery.record(contentLengthAsNumber) // Simple example of how it could work
+            log.info("Stock body size: $contentLengthAsNumber B")
+        }
         val id = stockService.createStock(stockDTO)
 
         if (id == -1L) {
@@ -70,8 +85,8 @@ class StockController {
 
         val createdLink = URI.create("stock/$id")
 
+        createdCounter.increment()
         log.info("Stock with id: $id was created and put on $createdLink")
-        registry.counter("api.response", "created", "stock").increment()
         return ResponseEntity.created(createdLink).build()
     }
 }
