@@ -3,5 +3,3 @@ management:
     export:
       influx:
         enabled: false
-logging:
-  config: ./src/test/resources/logback-test.xml
