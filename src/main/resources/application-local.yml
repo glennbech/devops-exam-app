@@ -8,4 +8,4 @@ management:
         enabled: true
 
 logging:
-  config: src/main/resources/logback-local.xml
+  config: ./src/main/resources/logback-local.xml

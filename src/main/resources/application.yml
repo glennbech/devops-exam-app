@@ -8,4 +8,4 @@ management:
         enabled: false
 
 logging:
-  config: logback-prod.xml
+  config: ./src/main/resources/logback-prod.xml

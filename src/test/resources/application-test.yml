@@ -4,4 +4,4 @@ management:
       influx:
         enabled: false
 logging:
-  config: src/main/resources/logback-local.xml
+  config: ./src/test/resources/logback-test.xml
