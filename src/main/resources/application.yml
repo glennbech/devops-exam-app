@@ -6,6 +6,3 @@ management:
     export:
       influx:
         enabled: false
-
-logging:
-  config: ./src/main/resources/logback-prod.xml

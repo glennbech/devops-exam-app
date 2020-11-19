@@ -1,0 +1,25 @@
+<configuration>
+    <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook"/>
+    <springProfile name="!local">
+        <appender name="LOGZIO" class="io.logz.logback.LogzioLogbackAppender">
+            <token>${LOGZ_TOKEN}</token>
+            <logzioUrl>${LOGZ_URL}</logzioUrl>
+            <logzioType>myType</logzioType>
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>INFO</level>
+            </filter>
+        </appender>
+    </springProfile>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-4relative [%thread] %-5level %logger{35} - %msg %n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="info">
+        <springProfile name="!local">
+            <appender-ref ref="LOGZIO" />
+        </springProfile>
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>
