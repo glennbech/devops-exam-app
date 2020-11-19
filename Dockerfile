@@ -6,4 +6,4 @@ RUN mvn package
 
 FROM openjdk:8-jdk-alpine
 COPY --from=builder /app/target/*.jar /app/application.jar
-ENTRYPOINT ["java","-jar","/app/application.jar"]
+ENTRYPOINT ["java","-Dspring.profiles.active=prod","-jar","/app/application.jar"]
