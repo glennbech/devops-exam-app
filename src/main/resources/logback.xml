@@ -18,7 +18,7 @@
 
     <root level="info">
         <springProfile name="!local">
-            <appender-ref ref="LOGZIO" />
+            <appender-ref ref="LOGZIO"/>
         </springProfile>
         <appender-ref ref="STDOUT"/>
     </root>

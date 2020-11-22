@@ -70,7 +70,7 @@ class StockTest : StockTestBase() {
                 .then()
                 .statusCode(200)
                 .assertThat()
-                .body("size()", CoreMatchers.equalTo((stockCount+2).toInt()))
+                .body("size()", CoreMatchers.equalTo((stockCount + 2).toInt()))
 
     }
 

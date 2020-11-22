@@ -6,15 +6,17 @@
 package no.breale.devop.exam.controller
 
 import io.micrometer.core.annotation.Timed
-import io.micrometer.core.instrument.*
+import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.DistributionSummary
+import io.micrometer.core.instrument.MeterRegistry
 import no.breale.devop.exam.dto.StockDTO
 import no.breale.devop.exam.service.StockService
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.net.URI
-import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
 @RestController
@@ -36,7 +38,7 @@ class StockController(
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
-    @GetMapping(path = ["/{id}"],produces = [MediaType.APPLICATION_JSON_VALUE])
+    @GetMapping(path = ["/{id}"], produces = [MediaType.APPLICATION_JSON_VALUE])
     fun getStock(@PathVariable("id") stockId: Long): ResponseEntity<StockDTO> {
         log.info("Attempting to get a stock with id $stockId")
         val id: Long
@@ -49,7 +51,7 @@ class StockController(
         }
 
         val stock = stockService.getStock(id)
-        if(stock === null) {
+        if (stock === null) {
             log.warn("Stock with id: $stockId cannot be found")
             return ResponseEntity.status(404).build()
         }
@@ -69,9 +71,9 @@ class StockController(
 
     @PostMapping(consumes = [(MediaType.APPLICATION_JSON_VALUE)])
     @Timed(value = "api.timer", extraTags = ["stock", "create"], description = "Time spent creating a new stock")
-    fun createStock(@RequestHeader(value = "Content-Length") contentLength: String, @RequestBody stockDTO: StockDTO): ResponseEntity<Unit>{
+    fun createStock(@RequestHeader(value = "Content-Length") contentLength: String, @RequestBody stockDTO: StockDTO): ResponseEntity<Unit> {
         log.info("Attempting to create a stock")
-        if(contentLength.isNotEmpty()) {
+        if (contentLength.isNotEmpty()) {
             val contentLengthAsNumber = contentLength.toDouble()
             createdDistributionSummery.record(contentLengthAsNumber) // Simple example of how it could work
             log.info("Stock body size: $contentLengthAsNumber B")

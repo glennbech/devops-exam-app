@@ -7,7 +7,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "STOCKS")
-class StockEntity (
+class StockEntity(
         var name: String?,
         var description: String?,
         @get:Id

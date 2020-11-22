@@ -13,12 +13,12 @@ class StockService {
     @Autowired
     lateinit var stockRepository: StockRepository
 
-    fun getStock(id: Long): StockDTO?{
+    fun getStock(id: Long): StockDTO? {
         val stock = stockRepository.findById(id).orElse(null) ?: return null
         return StockConverter().transform(stock)
     }
 
-    fun getAllStock(): List<StockDTO>{
+    fun getAllStock(): List<StockDTO> {
         return StockConverter().transform(stockRepository.findAll())
     }
 

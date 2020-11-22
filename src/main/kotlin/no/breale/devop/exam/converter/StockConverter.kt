@@ -2,7 +2,6 @@ package no.breale.devop.exam.converter
 
 import no.breale.devop.exam.dto.StockDTO
 import no.breale.devop.exam.entity.StockEntity
-import org.springframework.web.util.UriComponentsBuilder
 
 class StockConverter {
 
