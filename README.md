@@ -4,10 +4,16 @@
 
 ## Setup
 
-### Local
-
-
 ```bash
+First set Google cloud credentials file. File should 
+be placed at project root and be named `terraform.json`
+
+> travis encrypt-file terraform.json --add
+
+```
+
+### Local setup
+```
 > Start influxDB
 > Set spring profile to "local"
 > Start App.kt
